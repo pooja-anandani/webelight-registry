@@ -2,10 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import axiosClient from "../utils/ApiClient";
 import { useNavigate } from "react-router-dom";
 import {
+  Backdrop,
+  CircularProgress,
   Grid,
   Table,
   TableBody,
-  TableHead
+  TableHead,
+  Typography
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import { StyledTableCell, StyledTableRow } from "../utils/TableStyle";
@@ -17,13 +20,15 @@ export var userDetailContext = React.createContext(null);
 const columns = [
   { id: "id", label: "Id" },
   { id: "email", label: "Email" },
-  { id: "add server", label: "Modify" },
+  { id: "add server", label: "Actions" },
 ];
 
 function UserDashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
+  const [flag, setFlag] = useState(false);
   const { userFlag } = useContext(UserContext);
+
 
  
   const navigateServer = (email) => {
@@ -31,11 +36,12 @@ function UserDashboard() {
   };
 
   useEffect(() => {
+    setFlag(true)
     axiosClient
       .get("/retrieve-users")
       .then((result) => {
-        console.log(result.data)
         setUsers(result.data);
+        setFlag(false)
       })
       .catch((error) => {
         console.error(error);
@@ -45,6 +51,14 @@ function UserDashboard() {
  
   return (
     <div>
+        <Backdrop
+       sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+       open={flag}
+       
+     >
+        < CircularProgress color="inherit" />
+
+     </Backdrop>
       <Grid
         containter
         justify="center"
@@ -54,6 +68,9 @@ function UserDashboard() {
         height="100%"
       >
         <Grid item>
+        <Typography  variant="h5" id="tableTitle" component="div" align="center" marginRight={100} marginBottom={2} justifyContent={"center"}>
+          User Table
+        </Typography>
           <Table
             stickyHeader
             sx={{ outline: "black" }}
