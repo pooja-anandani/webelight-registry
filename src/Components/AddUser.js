@@ -7,27 +7,35 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import axiosClient from "../utils/ApiClient";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { userDetailContext } from "./UserDashboard";
 import { UserContext } from "../utils/UserContext";
 
 const AddUser = (props) => {
-  const {userFlag,setUserFlag} = useContext(UserContext);
+  const { userFlag, setUserFlag } = useContext(UserContext);
 
-  const [values, setValues] = React.useState({
+  const initialState = {
     email: props.email,
     username: "",
     host: "",
-  });
+  };
 
-  const [errors, setErrors] = React.useState({
+  const [values, setValues] = React.useState(initialState);
+  const initialErrorState = {
     email: "",
     username: "",
     host: "",
-  });
+  };
+
+  const [errors, setErrors] = React.useState(initialErrorState);
+
+  const handleClose = () => {
+    setValues(initialState);
+    setErrors(initialErrorState);
+    props.close();
+  };
 
   const checkForm = () => {
     var formInvalid = false;
@@ -50,27 +58,27 @@ const AddUser = (props) => {
   const validate = (name, value) => {
     let errorsObj = { ...errors };
     if (name === "username") {
-      if (!/^[A-Za-z]+$/i.test(value)) {
-        errorsObj.username = "Invalid username";
-      } else if (value === "") {
-        errorsObj.username = "Invalid username";
+      if (value) {
+        if (!/^[A-Za-z]+$/i.test(value)) {
+          errorsObj.username = "Invalid username";
+        }else{
+          errorsObj.username = "";
+        }
       } else {
         errorsObj.username = "";
       }
     }
 
     if (name === "email") {
-      if (!/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/i.test(value)) {
-        errorsObj.email = "Please enter valid email address";
-      } else if (value === "") {
-        errorsObj.username = "Invalid email";
+      if (value) {
+        if (!/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/i.test(value)) {
+          errorsObj.email = "Please enter valid email address";
+        }else{
+          errorsObj.email = "";
+
+        }
       } else {
         errorsObj.email = "";
-      }
-    }
-    if (name === "host") {
-      if (value === "") {
-        errorsObj.username = "Invalid email";
       }
     }
 
@@ -82,23 +90,11 @@ const AddUser = (props) => {
     setValues({ ...values, [name]: value });
     var errors = validate(name, value);
     setErrors({ ...errors });
+    console.log("errorrs", errors);
   };
-
 
   const notifyerror = () => {
     toast.error("error !", {
-      position: "top-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "light",
-    });
-  };
-  const notifysucess = () => {
-    toast.success("record created ", {
       position: "top-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -124,14 +120,16 @@ const AddUser = (props) => {
         })
         .then((res) => {
           if (res.status == 200) {
-            notifysucess();
+            toast.success("Record created ");
             setUserFlag(!userFlag);
+            setValues(initialState);
             props.close();
           }
         })
         .catch((error) => {
           console.log(error);
           notifyerror();
+          props.close();
         });
     }
   };
@@ -143,15 +141,15 @@ const AddUser = (props) => {
         <DialogContent>
           <DialogContentText>Please, enter the information</DialogContentText>
           <TextField
-            required
             autoFocus
+            required
             margin="dense"
             id="email"
             name="email"
             label="Email"
             type="email"
-            fullWidth
             value={props.email}
+            fullWidth
             onChange={handleChange}
             error={errors.email != ""}
             helperText={errors.email ? "Please enter valid email address" : ""}
@@ -160,22 +158,20 @@ const AddUser = (props) => {
 
           <TextField
             required
-            autoFocus
             margin="dense"
             id="host"
             name="host"
-            label="host"
+            label="Host"
             type="text"
             onChange={handleChange}
             fullWidth
           />
           <TextField
             required
-            autoFocus
             margin="dense"
             id="username"
             name="username"
-            label="username"
+            label="Username"
             type="text"
             fullWidth
             onChange={handleChange}
@@ -183,16 +179,17 @@ const AddUser = (props) => {
             helperText={errors.username ? "Please enter valid username" : ""}
           />
         </DialogContent>
+
         <DialogActions>
-          <Button onClick={props.close} color="secondary">
+          <Button onClick={handleClose} color="secondary">
             Cancel
           </Button>
           <Button onClick={submit} color="primary">
-            <ToastContainer />
             Submit
           </Button>
         </DialogActions>
       </Dialog>
+      <ToastContainer />
     </div>
   );
 };
