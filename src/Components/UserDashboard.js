@@ -41,7 +41,7 @@ function UserDashboard() {
       .get("/retrieve-users")
       .then((result) => {
         setUsers(result.data.data);
-        setFilteredUsers( result.data.data);
+        setFilteredUsers(result.data.data);
         setFlag(false);
       })
       .catch((error) => {
