@@ -1,6 +1,5 @@
 {
   "name": "webelight-server",
-  "proxy": "http://ssh-registry-rotation.webelight.co.in",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

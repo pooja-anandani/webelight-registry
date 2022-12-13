@@ -1,5 +1,7 @@
 import {
+  Backdrop,
   Button,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
@@ -7,15 +9,20 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material";
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import axiosClient from "../utils/ApiClient";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../utils/UserContext";
 
+
+const initialErrorState = {
+  email: "",
+};
+
 const AddUser = (props) => {
   const { userFlag, setUserFlag } = useContext(UserContext);
-
+  const [flag, setFlag] = useState(false);
   const initialState = {
     email: props.email,
     username: "",
@@ -23,12 +30,6 @@ const AddUser = (props) => {
   };
 
   const [values, setValues] = React.useState(initialState);
-  const initialErrorState = {
-    email: "",
-    username: "",
-    host: "",
-  };
-
   const [errors, setErrors] = React.useState(initialErrorState);
 
   const handleClose = () => {
@@ -39,17 +40,18 @@ const AddUser = (props) => {
 
   const checkForm = () => {
     var formInvalid = false;
-    for (var i in values) {
-      if (values[i] == "") {
-        formInvalid = true;
-        break;
-      }
-    }
     var errorsInForm = false;
-    for (var i in errors) {
-      if (errors[i] != "") {
-        errorsInForm = true;
-        break;
+    for (var i in values) {
+      if (values[i] === "") {
+        formInvalid = true;
+      } else {
+        if (i === "email") {
+          var errors = validate(i, values[i]);
+          setErrors({ ...errors });
+          if (errors.email !== "") {
+            errorsInForm = true;
+          }
+        }
       }
     }
     return formInvalid || errorsInForm;
@@ -57,25 +59,12 @@ const AddUser = (props) => {
 
   const validate = (name, value) => {
     let errorsObj = { ...errors };
-    if (name === "username") {
-      if (value) {
-        if (!/^[A-Za-z]+$/i.test(value)) {
-          errorsObj.username = "Invalid username";
-        }else{
-          errorsObj.username = "";
-        }
-      } else {
-        errorsObj.username = "";
-      }
-    }
-
     if (name === "email") {
       if (value) {
         if (!/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/i.test(value)) {
           errorsObj.email = "Please enter valid email address";
-        }else{
+        } else {
           errorsObj.email = "";
-
         }
       } else {
         errorsObj.email = "";
@@ -88,9 +77,6 @@ const AddUser = (props) => {
     var name = event.target.name;
     var value = event.target.value;
     setValues({ ...values, [name]: value });
-    var errors = validate(name, value);
-    setErrors({ ...errors });
-    console.log("errorrs", errors);
   };
 
   const notifyerror = () => {
@@ -108,34 +94,43 @@ const AddUser = (props) => {
 
   const submit = (event) => {
     event.preventDefault();
+    setFlag(true);
     var response = checkForm();
     if (response) {
       notifyerror();
     } else {
       axiosClient
         .post("/setup-key-pair", {
-          email: values.email,
+          email: values.email || props.email,
           host: values.host,
           username: values.username,
         })
         .then((res) => {
-          if (res.status == 200) {
+          if (res.status === 200) {
             toast.success("Record created ");
             setUserFlag(!userFlag);
             setValues(initialState);
+            setFlag(false);
             props.close();
           }
         })
         .catch((error) => {
-          console.log(error);
           notifyerror();
           props.close();
         });
-    }
+    
   };
+}
 
   return (
     <div>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={flag}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       <Dialog open={props.open} onClose={props.close} aria-labelledby="edit">
         <DialogTitle id="edit">Enter Details</DialogTitle>
         <DialogContent>
@@ -151,7 +146,7 @@ const AddUser = (props) => {
             value={props.email}
             fullWidth
             onChange={handleChange}
-            error={errors.email != ""}
+            error={errors.email !== ""}
             helperText={errors.email ? "Please enter valid email address" : ""}
             readonly={props.readFlag}
           />
@@ -175,8 +170,6 @@ const AddUser = (props) => {
             type="text"
             fullWidth
             onChange={handleChange}
-            error={errors.username != ""}
-            helperText={errors.username ? "Please enter valid username" : ""}
           />
         </DialogContent>
 
