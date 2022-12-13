@@ -26,8 +26,7 @@ const columns = [
 
 function UserDashboard() {
   const navigate = useNavigate();
-  // const [users, setUsers] = useState([]);
-  const {users, setUsers} = useContext(UserContext)
+  const { setUsers} = useContext(UserContext)
   const {filteredUsers, setFilteredUsers} = useContext (UserContext)
   const [flag, setFlag] = useState(false);
   const { userFlag } = useContext(UserContext);
@@ -42,7 +41,7 @@ function UserDashboard() {
       .get("/retrieve-users")
       .then((result) => {
         setUsers(result.data.data);
-        setFilteredUsers(result.data.data)
+        setFilteredUsers( result.data.data);
         setFlag(false);
       })
       .catch((error) => {
@@ -62,6 +61,7 @@ function UserDashboard() {
         <PageNotFound />
       ) : (
         <>
+        
           <Grid
             containter
             justify="center"

@@ -101,7 +101,7 @@ const AddUser = (props) => {
     } else {
       axiosClient
         .post("/setup-key-pair", {
-          email: values.email || props,
+          email: values.email || props.email,
           host: values.host,
           username: values.username,
         })
@@ -118,8 +118,9 @@ const AddUser = (props) => {
           notifyerror();
           props.close();
         });
-    }
+    
   };
+}
 
   return (
     <div>
