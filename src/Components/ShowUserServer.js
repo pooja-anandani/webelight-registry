@@ -30,13 +30,15 @@ export const ShowUserServer = () => {
     { id: "username", label: "Username" },
     { id: "delete", label: "Action" },
   ];
-  const [server, setServer] = useState([]);
+  const {servers, setServers} = useContext(UserContext);
   const { userFlag } = useContext(UserContext);
   const email = window.location.pathname.split("/")[2];
   const [host, setHost] = useState([]);
   const [open, setOpen] = useState(false);
   const [flag, setFlag] = useState(false);
   const [error,setError] = useState(false)
+  const {filteredServers, setFilteredServers} = useContext(UserContext);
+ 
 
   const handleClose = () => {
     setOpen(false);
@@ -47,8 +49,8 @@ export const ShowUserServer = () => {
     axiosClient
       .post("/revoke-key-pair", { email: email, servers: host })
       .then((response) => {
-        const index = server.data.indexOf(host[0]);
-        server.data.splice(index, 1);
+        const index = servers.indexOf(host[0]);
+        servers.splice(index, 1);
         setOpen(false);
         setFlag(false);
       })
@@ -67,7 +69,8 @@ export const ShowUserServer = () => {
     axiosClient
       .get(`/retrieve-key-pair?email=${email}`)
       .then((result) => {
-        setServer(result.data);
+        setServers(result.data?.data);
+        setFilteredServers(result.data?.data)
         setFlag(false);
       })
       .catch((error) => {
@@ -85,13 +88,14 @@ export const ShowUserServer = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
-      {console.log(error)}
+
       {
         error ?(
           <PageNotFound/>
 
         ):(
-          server?.data?.length === 0  ? (
+          
+          filteredServers?.length === 0  ? (
             <PageNotFound/>
           ) : (
             <Grid
@@ -143,7 +147,8 @@ export const ShowUserServer = () => {
                     </StyledTableRow>
                   </TableHead>
                   <TableBody>
-                    {server?.data?.map((row, id) => (
+                    
+                    {filteredServers?.map((row, id) => (
                       <StyledTableRow key={row.name}>
                         <StyledTableCell component="th" scope="row">
                           {id + 1}

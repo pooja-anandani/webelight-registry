@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-console.log(process.env);
+
 const axiosClient = axios.create({
     baseURL: 'http://ssh-registry-rotation.webelight.co.in',
       

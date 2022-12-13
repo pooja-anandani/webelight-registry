@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { styled, alpha } from "@mui/material/styles";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -11,6 +11,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { Button, Dialog, DialogActions } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import AddUser from "./AddUser";
+import { UserContext } from "../utils/UserContext";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -57,6 +58,21 @@ const Header = () => {
   const location = useLocation();
   const getemail = location.pathname.split("/")[2]
   const [open,setOpen]=useState(false)
+  const {users} = useContext(UserContext);
+  const {setFilteredUsers} = useContext(UserContext)
+  const {setFilteredServers} = useContext(UserContext);
+  const {servers} = useContext(UserContext);
+ 
+
+  const handleUserChanges = (event) =>{
+    const filtered = users?.filter((user) => {return user.email.includes(event.target.value)})
+    setFilteredUsers(filtered)
+  }
+
+  const handleServerChanges = (event) =>{
+    const filtered = servers?.filter((server) => {return server.host.includes(event.target.value)})
+    setFilteredServers(filtered)
+  }
  
   if (location.pathname.includes("/servers")) {
     var displayButton = (
@@ -79,6 +95,15 @@ const Header = () => {
         
       </Button>
     );
+
+    var search = (
+      <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ "aria-label": "search" }}
+              onChange = {handleServerChanges}
+            />
+
+    )
   } else {
     var displayButton = (
       <Button
@@ -98,6 +123,14 @@ const Header = () => {
 
       </Button>
     );
+    var search = (
+      <StyledInputBase
+              placeholder="Search…"
+              inputProps={{ "aria-label": "search" }}
+              onChange = {handleUserChanges}
+            />
+
+    )
   }
 
   return (
@@ -130,14 +163,12 @@ const Header = () => {
 
           {displayButton}
           <AddUser open={open} close={() => setOpen(false)} email={getemail} readFlag={getemail?true:false}/>
+         
           <Search>
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              inputProps={{ "aria-label": "search" }}
-            />
+            {search}
           </Search>
         </Toolbar>
       </AppBar>
