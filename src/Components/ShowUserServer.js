@@ -22,6 +22,8 @@ import { Delete } from "@mui/icons-material";
 import { StyledTableCell, StyledTableRow } from "../utils/TableStyle";
 import { UserContext } from "../utils/UserContext";
 import PageNotFound from "../utils/PageNotFound";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const ShowUserServer = () => {
   const columns = [
@@ -35,7 +37,7 @@ export const ShowUserServer = () => {
   const email = window.location.pathname.split("/")[2];
   const [host, setHost] = useState([]);
   const [open, setOpen] = useState(false);
-  const [flag, setFlag] = useState(false);
+  const [flag, setFlag] = useState(true);
   const [error, setError] = useState(false);
   const { filteredServers, setFilteredServers } = useContext(UserContext);
 
@@ -44,17 +46,18 @@ export const ShowUserServer = () => {
   };
 
   const handleCloseAgree = () => {
-    setFlag(true);
     axiosClient
       .post("/revoke-key-pair", { email: email, servers: host })
       .then((response) => {
         const index = servers.indexOf(host[0]);
+        toast.success("Server Access Revoked!")
         servers.splice(index, 1);
         setOpen(false);
         setFlag(false);
       })
       .catch((error) => {
         console.log(error);
+        toast.error("Error !")
       });
   };
 
@@ -80,14 +83,17 @@ export const ShowUserServer = () => {
   }, [userFlag]);
   return (
     <>
-      <Backdrop
+    {
+      flag?(
+        <Backdrop
         sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
         open={flag}
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+      ):(
 
-      {error ? (
+      error ? (
         <PageNotFound />
       ) : filteredServers?.length === 0 ? (
         <PageNotFound />
@@ -174,9 +180,13 @@ export const ShowUserServer = () => {
                 <Button onClick={handleCloseAgree}>Yes</Button>
               </DialogActions>
             </Dialog>
+            <ToastContainer/>
           </Grid>
         </Grid>
-      )}
+      )
+      )
+    }
+     
     </>
   );
 };

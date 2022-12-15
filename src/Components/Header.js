@@ -70,7 +70,7 @@ const Header = () => {
   }
 
   const handleServerChanges = (event) =>{
-    const filtered = servers?.filter((server) => {return server.host.includes(event.target.value)})
+    const filtered = servers?.filter((server) => {return server.host.includes(event.target.value) || server.username.includes(event.target.value)})
     setFilteredServers(filtered)
   }
  

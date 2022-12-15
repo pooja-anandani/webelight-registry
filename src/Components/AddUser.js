@@ -15,9 +15,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserContext } from "../utils/UserContext";
 
-
 const initialErrorState = {
   email: "",
+ 
 };
 
 const AddUser = (props) => {
@@ -35,15 +35,18 @@ const AddUser = (props) => {
   const handleClose = () => {
     setValues(initialState);
     setErrors(initialErrorState);
+    setFlag(false);
     props.close();
   };
 
   const checkForm = () => {
     var formInvalid = false;
     var errorsInForm = false;
+   
     for (var i in values) {
       if (values[i] === "") {
         formInvalid = true;
+
       } else {
         if (i === "email") {
           var errors = validate(i, values[i]);
@@ -53,6 +56,7 @@ const AddUser = (props) => {
           }
         }
       }
+      
     }
     return formInvalid || errorsInForm;
   };
@@ -96,9 +100,7 @@ const AddUser = (props) => {
     event.preventDefault();
     setFlag(true);
     var response = checkForm();
-    if (response) {
-      notifyerror();
-    } else {
+    if (!response) {
       axiosClient
         .post("/setup-key-pair", {
           email: values.email || props.email,
@@ -107,7 +109,12 @@ const AddUser = (props) => {
         })
         .then((res) => {
           if (res.status === 200) {
-            toast.success("Record created ");
+            if (props.email) {
+              toast.success("Server Created");
+            } else {
+              toast.success("User Created");
+            }
+
             setUserFlag(!userFlag);
             setValues(initialState);
             setFlag(false);
@@ -116,11 +123,16 @@ const AddUser = (props) => {
         })
         .catch((error) => {
           notifyerror();
+          setFlag(false);
           props.close();
         });
-    
+    }else{
+      if(!errors.email){
+        toast.error("All fields are required")
+      }
+
+    }
   };
-}
 
   return (
     <div>
